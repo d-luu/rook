@@ -36,6 +36,8 @@ import (
 )
 
 var (
+	retries         = 5
+	durationSeconds = 1
 	logger          = capnslog.NewPackageLogger("github.com/rook/rook", "rook-discover")
 	AppName         = "rook-discover"
 	NodeAttr        = "rook.io/node"
@@ -88,7 +90,14 @@ func updateDeviceCM(context *clusterd.Context) error {
 	}
 	deviceStr := string(deviceJson)
 	if cm == nil {
-		cm, err = context.Clientset.CoreV1().ConfigMaps(namespace).Get(cmName, metav1.GetOptions{})
+		for i := 0; i < retries; i++ {
+			cm, err = context.Clientset.CoreV1().ConfigMaps(namespace).Get(cmName, metav1.GetOptions{})
+			if err != nil {
+				time.Sleep(time.Duration(durationSeconds) * time.Second)
+			} else {
+				break
+			}
+		}
 	}
 	if err == nil {
 		lastDevice = cm.Data[LocalDiskCMData]
