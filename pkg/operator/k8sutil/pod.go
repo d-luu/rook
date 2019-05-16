@@ -219,20 +219,12 @@ func GetPodLog(clientset kubernetes.Interface, namespace string, labelSelector s
 }
 
 // ClusterDaemonEnvVars Environment variables used by storage cluster daemon
-func ClusterDaemonEnvVars(image string) []v1.EnvVar {
+func ClusterDaemonEnvVarsWithoutPodMemory(image string) []v1.EnvVar {
 	return []v1.EnvVar{
 		{Name: "CONTAINER_IMAGE", Value: image},
 		{Name: "POD_NAME", ValueFrom: &v1.EnvVarSource{FieldRef: &v1.ObjectFieldSelector{FieldPath: "metadata.name"}}},
 		{Name: "POD_NAMESPACE", ValueFrom: &v1.EnvVarSource{FieldRef: &v1.ObjectFieldSelector{FieldPath: "metadata.namespace"}}},
 		{Name: "NODE_NAME", ValueFrom: &v1.EnvVarSource{FieldRef: &v1.ObjectFieldSelector{FieldPath: "spec.nodeName"}}},
-
-		// If limits.memory is not set in the pod definition, Kubernetes will populate that value with the total memory available on the host
-		// If a user sets 0, all available memory on the host will be used
-		{Name: "POD_MEMORY_LIMIT", ValueFrom: &v1.EnvVarSource{ResourceFieldRef: &v1.ResourceFieldSelector{Resource: "limits.memory"}}}, // Bytes
-
-		// If requests.memory is not set in the pod definition, Kubernetes will use the formula "requests.memory = limits.memory" during pods's scheduling
-		// Kubernetes will set this variable to 0 or equal to limits.memory if set
-		{Name: "POD_MEMORY_REQUEST", ValueFrom: &v1.EnvVarSource{ResourceFieldRef: &v1.ResourceFieldSelector{Resource: "requests.memory"}}}, // Bytes
 
 		// If limits.cpu is not set in the pod definition, Kubernetes will set this variable to number of CPUs available on the host
 		// If a user sets 0, all CPUs will be used
@@ -242,4 +234,17 @@ func ClusterDaemonEnvVars(image string) []v1.EnvVar {
 		// Kubernetes will set this variable to 0 or equal to limits.cpu if set
 		{Name: "POD_CPU_REQUEST", ValueFrom: &v1.EnvVarSource{ResourceFieldRef: &v1.ResourceFieldSelector{Resource: "requests.cpu"}}},
 	}
+}
+
+// ClusterDaemonEnvVars Environment variables used by storage cluster daemon
+func ClusterDaemonEnvVars(image string) []v1.EnvVar {
+	return append(ClusterDaemonEnvVarsWithoutPodMemory(image), []v1.EnvVar{
+		// If limits.memory is not set in the pod definition, Kubernetes will populate that value with the total memory available on the host
+		// If a user sets 0, all available memory on the host will be used
+		{Name: "POD_MEMORY_LIMIT", ValueFrom: &v1.EnvVarSource{ResourceFieldRef: &v1.ResourceFieldSelector{Resource: "limits.memory"}}}, // Bytes
+
+		// If requests.memory is not set in the pod definition, Kubernetes will use the formula "requests.memory = limits.memory" during pods's scheduling
+		// Kubernetes will set this variable to 0 or equal to limits.memory if set
+		{Name: "POD_MEMORY_REQUEST", ValueFrom: &v1.EnvVarSource{ResourceFieldRef: &v1.ResourceFieldSelector{Resource: "requests.memory"}}}, // Bytes
+	}...)
 }

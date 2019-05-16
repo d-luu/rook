@@ -66,6 +66,9 @@ type ClusterSpec struct {
 	// Resources set resource requests and limits
 	Resources rook.ResourceSpec `json:"resources,omitempty"`
 
+	// PriorityClasses sets priority classes on components
+	PriorityClasses rook.PriorityClassSpec `json:"priorityClasses,omitempty"`
+
 	// The path on the host where config and data can be persisted.
 	DataDirHostPath string `json:"dataDirHostPath,omitempty"`
 
@@ -233,6 +236,9 @@ type MetadataServerSpec struct {
 	// The annotations-related configuration to add/set on each Pod related object.
 	Annotations rook.Annotations `json:"annotations,omitempty"`
 
+	// The priority class to set on each Pod related object.
+	PriorityClass string `json:"priorityClass,omitempty"`
+
 	// The resource requirements for the rgw pods
 	Resources v1.ResourceRequirements `json:"resources"`
 }
@@ -314,6 +320,9 @@ type GatewaySpec struct {
 
 	// The annotations-related configuration to add/set on each Pod related object.
 	Annotations rook.Annotations `json:"annotations,omitempty"`
+
+	// The priority class add/set on each Pod related object.
+	PriorityClass string `json:"priorityClass,omitempty"`
 
 	// The resource requirements for the rgw pods
 	Resources v1.ResourceRequirements `json:"resources"`

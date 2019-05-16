@@ -64,6 +64,7 @@ type FilesystemController struct {
 	rookVersion        string
 	cephVersion        cephv1.CephVersionSpec
 	hostNetwork        bool
+	priorityClass      string
 	ownerRef           metav1.OwnerReference
 	dataDirHostPath    string
 	orchestrationMutex sync.Mutex
@@ -128,7 +129,7 @@ func (c *FilesystemController) onAdd(obj interface{}) {
 	c.acquireOrchestrationLock()
 	defer c.releaseOrchestrationLock()
 
-	err = createFilesystem(c.clusterInfo, c.context, *filesystem, c.rookVersion, c.cephVersion, c.hostNetwork, c.filesystemOwners(filesystem), c.dataDirHostPath)
+	err = createFilesystem(c.clusterInfo, c.context, *filesystem, c.rookVersion, c.cephVersion, c.hostNetwork, c.priorityClass, c.filesystemOwners(filesystem), c.dataDirHostPath)
 	if err != nil {
 		logger.Errorf("failed to create filesystem %s: %+v", filesystem.Name, err)
 	}
@@ -163,7 +164,7 @@ func (c *FilesystemController) onUpdate(oldObj, newObj interface{}) {
 
 	// if the filesystem is modified, allow the filesystem to be created if it wasn't already
 	logger.Infof("updating filesystem %s", newFS.Name)
-	err = createFilesystem(c.clusterInfo, c.context, *newFS, c.rookVersion, c.cephVersion, c.hostNetwork, c.filesystemOwners(newFS), c.dataDirHostPath)
+	err = createFilesystem(c.clusterInfo, c.context, *newFS, c.rookVersion, c.cephVersion, c.hostNetwork, c.priorityClass, c.filesystemOwners(newFS), c.dataDirHostPath)
 	if err != nil {
 		logger.Errorf("failed to create (modify) filesystem %s: %+v", newFS.Name, err)
 	}
@@ -187,7 +188,7 @@ func (c *FilesystemController) ParentClusterChanged(cluster cephv1.ClusterSpec, 
 	}
 	for _, fs := range filesystems.Items {
 		logger.Infof("updating the ceph version for filesystem %s to %s", fs.Name, c.cephVersion.Image)
-		err = createFilesystem(c.clusterInfo, c.context, fs, c.rookVersion, c.cephVersion, c.hostNetwork, c.filesystemOwners(&fs), c.dataDirHostPath)
+		err = createFilesystem(c.clusterInfo, c.context, fs, c.rookVersion, c.cephVersion, c.hostNetwork, c.priorityClass, c.filesystemOwners(&fs), c.dataDirHostPath)
 		if err != nil {
 			logger.Errorf("failed to update filesystem %s. %+v", fs.Name, err)
 		} else {
@@ -236,6 +237,10 @@ func filesystemChanged(oldFS, newFS cephv1.FilesystemSpec) bool {
 	}
 	if oldFS.MetadataServer.ActiveStandby != newFS.MetadataServer.ActiveStandby {
 		logger.Infof("mds active standby changed from %t to %t", oldFS.MetadataServer.ActiveStandby, newFS.MetadataServer.ActiveStandby)
+		return true
+	}
+	if oldFS.MetadataServer.PriorityClass != newFS.MetadataServer.PriorityClass {
+		logger.Infof("mds priority class changed from %s to %s", oldFS.MetadataServer.PriorityClass, newFS.MetadataServer.PriorityClass)
 		return true
 	}
 	return false
@@ -328,6 +333,7 @@ func convertRookLegacyFilesystem(legacyFilesystem *cephbeta.Filesystem) *cephv1.
 				ActiveStandby: legacySpec.MetadataServer.ActiveStandby,
 				Placement:     legacySpec.MetadataServer.Placement,
 				Resources:     legacySpec.MetadataServer.Resources,
+				PriorityClass: legacySpec.MetadataServer.PriorityClass,
 			},
 		},
 	}

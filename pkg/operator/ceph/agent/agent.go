@@ -41,6 +41,7 @@ const (
 	flexvolumeDefaultDirPath       = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 	agentDaemonsetTolerationEnv    = "AGENT_TOLERATION"
 	agentDaemonsetTolerationKeyEnv = "AGENT_TOLERATION_KEY"
+	agentDaemonsetPriorityClassEnv = "AGENT_PRIORITY_CLASS"
 	AgentMountSecurityModeEnv      = "AGENT_MOUNT_SECURITY_MODE"
 	RookEnableSelinuxRelabelingEnv = "ROOK_ENABLE_SELINUX_RELABELING"
 	RookEnableFSGroupEnv           = "ROOK_ENABLE_FSGROUP"
@@ -193,7 +194,8 @@ func (a *Agent) createAgentDaemonSet(namespace, agentImage, serviceAccount strin
 							},
 						},
 					},
-					HostNetwork: true,
+					HostNetwork:       true,
+					PriorityClassName: os.Getenv(agentDaemonsetPriorityClassEnv),
 				},
 			},
 		},

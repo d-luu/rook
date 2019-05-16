@@ -41,6 +41,7 @@ const (
 	discoverDaemonsetName             = "rook-discover"
 	discoverDaemonsetTolerationEnv    = "DISCOVER_TOLERATION"
 	discoverDaemonsetTolerationKeyEnv = "DISCOVER_TOLERATION_KEY"
+	discoverDaemonsetPriorityClassEnv = "DISCOVER_PRIORITY_CLASS"
 	deviceInUseCMName                 = "local-device-in-use-cluster-%s-node-%s"
 	deviceInUseAppName                = "rook-claimed-devices"
 	deviceInUseClusterAttr            = "rook.io/cluster"
@@ -152,7 +153,8 @@ func (d *Discover) createDiscoverDaemonSet(namespace, discoverImage, securityAcc
 							},
 						},
 					},
-					HostNetwork: false,
+					HostNetwork:       false,
+					PriorityClassName: os.Getenv(discoverDaemonsetPriorityClassEnv),
 				},
 			},
 		},

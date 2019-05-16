@@ -57,6 +57,8 @@ func testPodSpec(t *testing.T, monID string) {
 			v1.ResourceMemory: *resource.NewQuantity(500.0, resource.BinarySI),
 		},
 	}
+	c.spec.PriorityClasses = map[string]string{}
+	c.spec.PriorityClasses["mon"] = "my-priority-class"
 	monConfig := testGenMonConfig(monID)
 
 	d := c.makeDeployment(monConfig, "node0")
@@ -68,5 +70,6 @@ func testPodSpec(t *testing.T, monID string) {
 
 	podTemplate := cephtest.NewPodTemplateSpecTester(t, &d.Spec.Template)
 	podTemplate.RunFullSuite(config.MonType, monID, appName, "ns", "ceph/ceph:myceph",
-		"200", "100", "1337", "500" /* resources */)
+		"200", "100", "1337", "500", /* resources */
+		"my-priority-class")
 }

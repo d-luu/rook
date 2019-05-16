@@ -92,10 +92,11 @@ func (c *Cluster) makeMonPod(monConfig *monConfig, hostname string) *v1.Pod {
 		Containers: []v1.Container{
 			c.makeMonDaemonContainer(monConfig),
 		},
-		RestartPolicy: v1.RestartPolicyAlways,
-		NodeSelector:  map[string]string{v1.LabelHostname: hostname},
-		Volumes:       opspec.DaemonVolumes(monConfig.DataPathMap, keyringStoreName),
-		HostNetwork:   c.HostNetwork,
+		RestartPolicy:     v1.RestartPolicyAlways,
+		NodeSelector:      map[string]string{v1.LabelHostname: hostname},
+		Volumes:           opspec.DaemonVolumes(monConfig.DataPathMap, keyringStoreName),
+		HostNetwork:       c.HostNetwork,
+		PriorityClassName: cephv1.GetMonPriorityClass(c.spec.PriorityClasses),
 	}
 	if c.HostNetwork {
 		podSpec.DNSPolicy = v1.DNSClusterFirstWithHostNet

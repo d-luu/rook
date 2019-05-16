@@ -52,6 +52,7 @@ func createFilesystem(
 	rookVersion string,
 	cephVersion cephv1.CephVersionSpec,
 	hostNetwork bool,
+	priorityClass string,
 	ownerRefs []metav1.OwnerReference,
 	dataDirHostPath string,
 ) error {

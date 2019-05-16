@@ -56,6 +56,7 @@ type Cluster struct {
 	dataDir         string
 	HostNetwork     bool
 	resources       v1.ResourceRequirements
+	priorityClass   string
 	ownerRef        metav1.OwnerReference
 	dashboard       cephv1.DashboardSpec
 	cephVersion     cephv1.CephVersionSpec
@@ -75,6 +76,7 @@ func New(
 	hostNetwork bool,
 	dashboard cephv1.DashboardSpec,
 	resources v1.ResourceRequirements,
+	priorityClass string,
 	ownerRef metav1.OwnerReference,
 	dataDirHostPath string,
 ) *Cluster {
@@ -83,6 +85,7 @@ func New(
 		context:         context,
 		Namespace:       namespace,
 		placement:       placement,
+		annotations:     annotations,
 		rookVersion:     rookVersion,
 		cephVersion:     cephVersion,
 		Replicas:        1,
@@ -90,6 +93,7 @@ func New(
 		dashboard:       dashboard,
 		HostNetwork:     hostNetwork,
 		resources:       resources,
+		priorityClass:   priorityClass,
 		ownerRef:        ownerRef,
 		exitCode:        getExitCode,
 		dataDirHostPath: dataDirHostPath,

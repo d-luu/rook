@@ -55,6 +55,7 @@ func TestRBDMirror(t *testing.T) {
 		false,
 		cephv1.RBDMirroringSpec{Workers: 2},
 		v1.ResourceRequirements{},
+		"",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)

@@ -80,7 +80,7 @@ func (c *Cluster) makeJob(nodeName string, devices []rookalpha.Device,
 }
 
 func (c *Cluster) makeDeployment(nodeName string, selection rookalpha.Selection, resources v1.ResourceRequirements,
-	storeConfig config.StoreConfig, metadataDevice, location string, osd OSDInfo) (*apps.Deployment, error) {
+	priorityClass string, storeConfig config.StoreConfig, metadataDevice, location string, osd OSDInfo) (*apps.Deployment, error) {
 
 	replicaCount := int32(1)
 	volumeMounts := opspec.CephVolumeMounts()
@@ -129,7 +129,15 @@ func (c *Cluster) makeDeployment(nodeName string, selection rookalpha.Selection,
 		k8sutil.PodIPEnvVar(k8sutil.PublicIPEnvVar),
 		tiniEnvVar,
 	}
-	envVars = append(envVars, k8sutil.ClusterDaemonEnvVars(c.cephVersion.Image)...)
+
+	var osdEnvVars []v1.EnvVar
+	if osd.IsFileStore && c.clusterInfo.CephVersion.IsAtLeastNautilus() {
+		k8sutil.ClusterDaemonEnvVarsWithoutPodMemory(c.cephVersion.Image)
+	} else {
+		k8sutil.ClusterDaemonEnvVars(c.cephVersion.Image)
+	}
+
+	envVars = append(envVars, osdEnvVars...)
 	envVars = append(envVars, []v1.EnvVar{
 		{Name: "ROOK_OSD_UUID", Value: osd.UUID},
 		{Name: "ROOK_OSD_ID", Value: osdID},
@@ -293,6 +301,7 @@ func (c *Cluster) makeDeployment(nodeName string, selection rookalpha.Selection,
 					HostPID:            true,
 					HostIPC:            hostIPC,
 					DNSPolicy:          DNSPolicy,
+					PriorityClassName:  priorityClass,
 					InitContainers: []v1.Container{
 						{
 							Args:            []string{"ceph", "osd", "init"},
@@ -387,9 +396,10 @@ func (c *Cluster) provisionPodTemplateSpec(devices []rookalpha.Device, selection
 			*copyBinariesContainer,
 			c.provisionOSDContainer(devices, selection, resources, storeConfig, metadataDevice, nodeName, location, copyBinariesContainer.VolumeMounts[0]),
 		},
-		RestartPolicy: restart,
-		Volumes:       volumes,
-		HostNetwork:   c.HostNetwork,
+		RestartPolicy:     restart,
+		Volumes:           volumes,
+		HostNetwork:       c.HostNetwork,
+		PriorityClassName: c.priorityClass,
 	}
 	if c.HostNetwork {
 		podSpec.DNSPolicy = v1.DNSClusterFirstWithHostNet

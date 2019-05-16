@@ -69,6 +69,7 @@ type Cluster struct {
 	dataDirHostPath string
 	HostNetwork     bool
 	resources       v1.ResourceRequirements
+	priorityClass   string
 	ownerRef        metav1.OwnerReference
 	kv              *k8sutil.ConfigMapKVStore
 }
@@ -86,6 +87,7 @@ func New(
 	annotations rookalpha.Annotations,
 	hostNetwork bool,
 	resources v1.ResourceRequirements,
+	priorityClass string,
 	ownerRef metav1.OwnerReference,
 ) *Cluster {
 	return &Cluster{
@@ -100,6 +102,7 @@ func New(
 		dataDirHostPath: dataDirHostPath,
 		HostNetwork:     hostNetwork,
 		resources:       resources,
+		priorityClass:   priorityClass,
 		ownerRef:        ownerRef,
 		kv:              k8sutil.NewConfigMapKVStore(namespace, context.Clientset, ownerRef),
 	}
@@ -275,7 +278,7 @@ func (c *Cluster) startOSDDaemonsOnNode(nodeName string, config *provisionConfig
 	// start osds
 	for _, osd := range osds {
 		logger.Debugf("start osd %v", osd)
-		dp, err := c.makeDeployment(n.Name, n.Selection, n.Resources, storeConfig, metadataDevice, n.Location, osd)
+		dp, err := c.makeDeployment(n.Name, n.Selection, n.Resources, c.priorityClass, storeConfig, metadataDevice, n.Location, osd)
 		if err != nil {
 			errMsg := fmt.Sprintf("failed to create deployment for node %s: %v", n.Name, err)
 			config.addError(errMsg)

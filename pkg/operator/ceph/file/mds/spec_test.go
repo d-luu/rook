@@ -43,6 +43,7 @@ func testDeploymentObject(hostNetwork bool) *apps.Deployment {
 			MetadataServer: cephv1.MetadataServerSpec{
 				ActiveCount:   1,
 				ActiveStandby: false,
+				PriorityClass: "my-priority-class",
 				Resources: v1.ResourceRequirements{
 					Limits: v1.ResourceList{
 						v1.ResourceCPU:    *resource.NewQuantity(500.0, resource.BinarySI),
@@ -92,7 +93,8 @@ func TestPodSpecs(t *testing.T) {
 
 	podTemplate := cephtest.NewPodTemplateSpecTester(t, &d.Spec.Template)
 	podTemplate.RunFullSuite(config.MdsType, "myfs-a", "rook-ceph-mds", "ns", "ceph/ceph:testversion",
-		"500", "250", "4337", "2169" /* resources */)
+		"500", "250", "4337", "2169", /* resources */
+		"my-priority-class")
 }
 
 func TestHostNetwork(t *testing.T) {

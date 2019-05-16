@@ -19,6 +19,7 @@ package cluster
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"reflect"
 	"sort"
 	"sync"
@@ -203,7 +204,8 @@ func (c *cluster) doOrchestration(rookImage string, cephVersion cephver.CephVers
 
 	mgrs := mgr.New(c.Info, c.context, c.Namespace, rookImage,
 		spec.CephVersion, cephv1.GetMgrPlacement(spec.Placement), cephv1.GetMgrAnnotations(c.Spec.Annotations),
-		spec.Network.HostNetwork, spec.Dashboard, cephv1.GetMgrResources(spec.Resources), c.ownerRef, c.Spec.DataDirHostPath)
+		spec.Network.HostNetwork, spec.Dashboard, cephv1.GetMgrResources(spec.Resources),
+		cephv1.GetMgrPriorityClass(spec.PriorityClasses), c.ownerRef, c.Spec.DataDirHostPath)
 	err = mgrs.Start()
 	if err != nil {
 		return fmt.Errorf("failed to start the ceph mgr. %+v", err)
@@ -212,7 +214,7 @@ func (c *cluster) doOrchestration(rookImage string, cephVersion cephver.CephVers
 	// Start the OSDs
 	osds := osd.New(c.Info, c.context, c.Namespace, rookImage, spec.CephVersion, spec.Storage, spec.DataDirHostPath,
 		cephv1.GetOSDPlacement(spec.Placement), cephv1.GetOSDAnnotations(spec.Annotations), spec.Network.HostNetwork,
-		cephv1.GetOSDResources(spec.Resources), c.ownerRef)
+		cephv1.GetOSDResources(spec.Resources), cephv1.GetOSDPriorityClass(spec.PriorityClasses), c.ownerRef)
 	err = osds.Start()
 	if err != nil {
 		return fmt.Errorf("failed to start the osds. %+v", err)
@@ -221,7 +223,8 @@ func (c *cluster) doOrchestration(rookImage string, cephVersion cephver.CephVers
 	// Start the rbd mirroring daemon(s)
 	rbdmirror := rbd.New(c.Info, c.context, c.Namespace, rookImage, spec.CephVersion, cephv1.GetRBDMirrorPlacement(spec.Placement),
 		cephv1.GetRBDMirrorAnnotations(spec.Annotations), spec.Network.HostNetwork, spec.RBDMirroring,
-		cephv1.GetRBDMirrorResources(spec.Resources), c.ownerRef, c.Spec.DataDirHostPath)
+		cephv1.GetRBDMirrorResources(spec.Resources), cephv1.GetRBDMirrorPriorityClass(spec.PriorityClasses),
+		c.ownerRef, c.Spec.DataDirHostPath)
 	err = rbdmirror.Start()
 	if err != nil {
 		return fmt.Errorf("failed to start the rbd mirrors. %+v", err)
@@ -304,7 +307,11 @@ func clusterChanged(oldCluster, newCluster cephv1.ClusterSpec, clusterRef *clust
 
 	// any change in the crd will trigger an orchestration
 	if !reflect.DeepEqual(oldCluster, newCluster) {
-		diff := cmp.Diff(oldCluster, newCluster)
+		resourceQtyCmpOpt := cmp.Comparer(func(x, y resource.Quantity) bool {
+			return x.Cmp(y) == 0
+		})
+		diff := cmp.Diff(oldCluster, newCluster, resourceQtyCmpOpt)
+		//diff := cmp.Diff(oldCluster, newCluster, cmp.AllowUnexported(cephv1.ClusterSpec{}))
 		logger.Infof("The Cluster CR has changed. diff=%s", diff)
 		return true, diff
 	}

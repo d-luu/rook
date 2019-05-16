@@ -64,6 +64,7 @@ func TestStartMGR(t *testing.T) {
 		false,
 		cephv1.DashboardSpec{Enabled: true},
 		v1.ResourceRequirements{},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)

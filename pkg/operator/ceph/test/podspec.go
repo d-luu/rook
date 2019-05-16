@@ -125,14 +125,20 @@ func (ps *PodSpecTester) AssertRestartPolicyAlways() {
 	assert.Equal(ps.t, v1.RestartPolicyAlways, ps.spec.RestartPolicy)
 }
 
+// AssertPriorityClassMatch asserts that the pod spec has priorityClassName set to be the same
+func (ps *PodSpecTester) AssertPriorityClassMatch(name string) {
+	assert.Equal(ps.t, name, ps.spec.PriorityClassName)
+}
+
 // RunFullSuite runs all assertion tests for the PodSpec under test and its sub-resources.
 func (ps *PodSpecTester) RunFullSuite(
 	daemonType config.DaemonType,
-	resourceName, cephImage, cpuResourceLimit, cpuResourceRequest, memoryResourceLimit, memoryResourceRequest string,
+	resourceName, cephImage, cpuResourceLimit, cpuResourceRequest, memoryResourceLimit, memoryResourceRequest, priorityClass string,
 ) {
 	ps.AssertVolumesAndMountsMatch()
 	ps.AssertVolumesMeetCephRequirements(daemonType, resourceName)
 	ps.AssertRestartPolicyAlways()
+	ps.AssertPriorityClassMatch(priorityClass)
 	ps.Containers().RunFullSuite(cephImage, cpuResourceLimit, cpuResourceRequest, memoryResourceLimit, memoryResourceRequest)
 }
 

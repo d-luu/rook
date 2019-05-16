@@ -42,6 +42,9 @@ func TestStartDiscoveryDaemonset(t *testing.T) {
 	os.Setenv(k8sutil.PodNameEnvVar, "rook-operator")
 	defer os.Unsetenv(k8sutil.PodNameEnvVar)
 
+	os.Setenv(discoverDaemonsetPriorityClassEnv, "my-priority-class")
+	defer os.Unsetenv(discoverDaemonsetPriorityClassEnv)
+
 	namespace := "ns"
 	a := New(clientset)
 
@@ -54,6 +57,7 @@ func TestStartDiscoveryDaemonset(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, namespace, agentDS.Namespace)
 	assert.Equal(t, "rook-discover", agentDS.Name)
+	assert.Equal(t, "my-priority-class", agentDS.Spec.Template.Spec.PriorityClassName)
 	assert.Equal(t, "mysa", agentDS.Spec.Template.Spec.ServiceAccountName)
 	assert.True(t, *agentDS.Spec.Template.Spec.Containers[0].SecurityContext.Privileged)
 	volumes := agentDS.Spec.Template.Spec.Volumes

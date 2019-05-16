@@ -36,10 +36,11 @@ type StorageScopeSpec struct {
 }
 
 type Node struct {
-	Name      string                  `json:"name,omitempty"`
-	Location  string                  `json:"location,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
-	Config    map[string]string       `json:"config"`
+	Name          string                  `json:"name,omitempty"`
+	Location      string                  `json:"location,omitempty"`
+	Resources     v1.ResourceRequirements `json:"resources,omitempty"`
+	PriorityClass string                  `json:"priorityClass,omitempty"`
+	Config        map[string]string       `json:"config"`
 	Selection
 }
 
@@ -77,6 +78,8 @@ type Placement struct {
 }
 
 type ResourceSpec map[string]v1.ResourceRequirements
+
+type PriorityClassSpec map[string]string
 
 type NetworkSpec struct {
 	metav1.TypeMeta `json:",inline"`

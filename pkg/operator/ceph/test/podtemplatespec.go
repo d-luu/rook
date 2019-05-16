@@ -49,8 +49,8 @@ func (pt *PodTemplateSpecTester) RunFullSuite(
 	daemonType config.DaemonType,
 	daemonID, appName, namespace, cephImage,
 	cpuResourceLimit, cpuResourceRequest,
-	memoryResourceLimit, memoryResourceRequest string,
+	memoryResourceLimit, memoryResourceRequest, priorityClass string,
 ) {
 	pt.AssertLabelsContainCephRequirements(daemonType, daemonID, appName, namespace)
-	pt.Spec().RunFullSuite(daemonType, daemonID, cephImage, cpuResourceLimit, cpuResourceRequest, memoryResourceLimit, memoryResourceRequest)
+	pt.Spec().RunFullSuite(daemonType, daemonID, cephImage, cpuResourceLimit, cpuResourceRequest, memoryResourceLimit, memoryResourceRequest, priorityClass)
 }
