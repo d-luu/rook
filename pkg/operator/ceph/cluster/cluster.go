@@ -40,7 +40,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -299,6 +298,52 @@ func (c *cluster) createInitialCrushMap() error {
 	return nil
 }
 
+// deepAllowUnexported is a utility method that captures all types in the interface, including nested ones,
+// and adds them to the AllowUnexported option
+// provided by Joe Tsai (dsnet) @ https://github.com/google/go-cmp/issues/40#issuecomment-328615283
+func deepAllowUnexported(vs ...interface{}) cmp.Option {
+	m := make(map[reflect.Type]struct{})
+	for _, v := range vs {
+		structTypes(reflect.ValueOf(v), m)
+	}
+	var typs []interface{}
+	for t := range m {
+		typs = append(typs, reflect.New(t).Elem().Interface())
+	}
+	return cmp.AllowUnexported(typs...)
+}
+
+// structTypes is a helper method that is used by deepAllowUnexported that adds each type to a hash set
+// provided by Joe Tsai (dsnet) @ https://github.com/google/go-cmp/issues/40#issuecomment-328615283
+func structTypes(v reflect.Value, m map[reflect.Type]struct{}) {
+	if !v.IsValid() {
+		return
+	}
+	switch v.Kind() {
+	case reflect.Ptr:
+		if !v.IsNil() {
+			structTypes(v.Elem(), m)
+		}
+	case reflect.Interface:
+		if !v.IsNil() {
+			structTypes(v.Elem(), m)
+		}
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < v.Len(); i++ {
+			structTypes(v.Index(i), m)
+		}
+	case reflect.Map:
+		for _, k := range v.MapKeys() {
+			structTypes(v.MapIndex(k), m)
+		}
+	case reflect.Struct:
+		m[v.Type()] = struct{}{}
+		for i := 0; i < v.NumField(); i++ {
+			structTypes(v.Field(i), m)
+		}
+	}
+}
+
 func clusterChanged(oldCluster, newCluster cephv1.ClusterSpec, clusterRef *cluster) (bool, string) {
 
 	// sort the nodes by name then compare to see if there are changes
@@ -307,7 +352,7 @@ func clusterChanged(oldCluster, newCluster cephv1.ClusterSpec, clusterRef *clust
 
 	// any change in the crd will trigger an orchestration
 	if !reflect.DeepEqual(oldCluster, newCluster) {
-		diff := cmp.Diff(oldCluster, newCluster)
+		diff := cmp.Diff(oldCluster, newCluster, deepAllowUnexported(oldCluster, newCluster))
 		logger.Infof("The Cluster CR has changed. diff=%s", diff)
 		return true, diff
 	}
