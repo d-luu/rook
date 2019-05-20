@@ -63,6 +63,9 @@ type ClusterSpec struct {
 	// Resources set resource requests and limits
 	Resources rook.ResourceSpec `json:"resources,omitempty"`
 
+	// PriorityClassNames sets priority classes on components
+	PriorityClassNames rook.PriorityClassNamesSpec `json:"priorityClassNames,omitempty"`
+
 	// The path on the host where config and data can be persisted.
 	DataDirHostPath string `json:"dataDirHostPath,omitempty"`
 
@@ -214,8 +217,11 @@ type MetadataServerSpec struct {
 	// The affinity to place the mds pods (default is to place on all available node) with a daemonset
 	Placement rook.Placement `json:"placement"`
 
-	// The resource requirements for the rgw pods
+	// The resource requirements for the mds pods
 	Resources v1.ResourceRequirements `json:"resources"`
+
+	// PriorityClassName sets priority classes on the mds pods
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 // +genclient
@@ -295,4 +301,7 @@ type GatewaySpec struct {
 
 	// The resource requirements for the rgw pods
 	Resources v1.ResourceRequirements `json:"resources"`
+
+	// PriorityClassName sets priority classes on the rgw pod
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }

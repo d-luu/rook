@@ -55,6 +55,7 @@ func TestPodSpec(t *testing.T) {
 				v1.ResourceMemory: *resource.NewQuantity(250.0, resource.BinarySI),
 			},
 		},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)
@@ -77,7 +78,8 @@ func TestPodSpec(t *testing.T) {
 		"ROOK_OPERATOR_NAMESPACE", "ROOK_CEPH_CLUSTER_CRD_VERSION", "ROOK_VERSION",
 		"ROOK_CEPH_CLUSTER_CRD_NAME")
 	podTemplate.RunFullSuite(config.MgrType, "a", appName, "ns", "ceph/ceph:myceph",
-		"200", "100", "500", "250" /* resources */)
+		"200", "100", "500", "250", /* resources */
+		"my-priority-class")
 
 }
 
@@ -94,6 +96,7 @@ func TestServiceSpec(t *testing.T) {
 		false,
 		cephv1.DashboardSpec{},
 		v1.ResourceRequirements{},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)
@@ -117,6 +120,7 @@ func TestHostNetwork(t *testing.T) {
 		true,
 		cephv1.DashboardSpec{},
 		v1.ResourceRequirements{},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)
@@ -148,6 +152,7 @@ func TestHttpBindFix(t *testing.T) {
 		true,
 		cephv1.DashboardSpec{},
 		v1.ResourceRequirements{},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)

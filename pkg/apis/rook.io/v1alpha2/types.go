@@ -79,6 +79,8 @@ type Placement struct {
 
 type ResourceSpec map[string]v1.ResourceRequirements
 
+type PriorityClassNamesSpec map[KeyType]string
+
 type NetworkSpec struct {
 	metav1.TypeMeta `json:",inline"`
 

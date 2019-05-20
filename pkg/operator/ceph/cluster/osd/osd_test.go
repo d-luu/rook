@@ -47,7 +47,7 @@ func TestStart(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	c := New(clusterInfo, &clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook", Executor: &exectest.MockExecutor{}}, "ns", "myversion", cephv1.CephVersionSpec{},
-		rookalpha.StorageScopeSpec{}, "", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, metav1.OwnerReference{})
+		rookalpha.StorageScopeSpec{}, "", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, "my-priority-class", metav1.OwnerReference{})
 
 	// Start the first time
 	err := c.Start()
@@ -125,7 +125,7 @@ func TestAddRemoveNode(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	c := New(clusterInfo, &clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook", Executor: &exectest.MockExecutor{}}, "ns-add-remove", "myversion", cephv1.CephVersionSpec{},
-		storageSpec, "/foo", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, metav1.OwnerReference{})
+		storageSpec, "/foo", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, "my-priority-class", metav1.OwnerReference{})
 
 	// kick off the start of the orchestration in a goroutine
 	var startErr error
@@ -210,7 +210,7 @@ func TestAddRemoveNode(t *testing.T) {
 	// modify the storage spec to remove the node from the cluster
 	storageSpec.Nodes = []rookalpha.Node{}
 	c = New(clusterInfo, &clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook", Executor: mockExec}, "ns-add-remove", "myversion", cephv1.CephVersionSpec{},
-		storageSpec, "", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, metav1.OwnerReference{})
+		storageSpec, "", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, "my-priority-class", metav1.OwnerReference{})
 
 	// reset the orchestration status watcher
 	statusMapWatcher = watch.NewFake()
@@ -252,24 +252,27 @@ func TestDiscoverOSDs(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	c := New(clusterInfo, &clusterd.Context{}, "ns", "myversion", cephv1.CephVersionSpec{},
-		rookalpha.StorageScopeSpec{}, "", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, metav1.OwnerReference{})
+		rookalpha.StorageScopeSpec{}, "", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, "my-priority-class", metav1.OwnerReference{})
 	node1 := "n1"
 	node2 := "n2"
 
 	osd1 := OSDInfo{ID: 0, IsDirectory: true, IsFileStore: true, DataPath: "/rook/path"}
-	d1, err := c.makeDeployment(node1, rookalpha.Selection{}, v1.ResourceRequirements{}, config.StoreConfig{}, "", "", osd1)
+	d1, err := c.makeDeployment(node1, rookalpha.Selection{}, v1.ResourceRequirements{}, "my-priority-class", config.StoreConfig{}, "", "", osd1)
 	assert.Nil(t, err)
 	assert.NotNil(t, d1)
+	assert.Equal(t, "my-priority-class", d1.Spec.Template.Spec.PriorityClassName)
 
 	osd2 := OSDInfo{ID: 101, IsDirectory: true, IsFileStore: true, DataPath: "/rook/path"}
-	d2, err := c.makeDeployment(node1, rookalpha.Selection{}, v1.ResourceRequirements{}, config.StoreConfig{}, "", "", osd2)
+	d2, err := c.makeDeployment(node1, rookalpha.Selection{}, v1.ResourceRequirements{}, "my-priority-class", config.StoreConfig{}, "", "", osd2)
 	assert.Nil(t, err)
 	assert.NotNil(t, d2)
+	assert.Equal(t, "my-priority-class", d2.Spec.Template.Spec.PriorityClassName)
 
 	osd3 := OSDInfo{ID: 23, IsDirectory: true, IsFileStore: true, DataPath: "/rook/path"}
-	d3, err := c.makeDeployment(node2, rookalpha.Selection{}, v1.ResourceRequirements{}, config.StoreConfig{}, "", "", osd3)
+	d3, err := c.makeDeployment(node2, rookalpha.Selection{}, v1.ResourceRequirements{}, "my-priority-class", config.StoreConfig{}, "", "", osd3)
 	assert.Nil(t, err)
 	assert.NotNil(t, d3)
+	assert.Equal(t, "my-priority-class", d3.Spec.Template.Spec.PriorityClassName)
 
 	clientset := fake.NewSimpleClientset(d1, d2, d3)
 	c.context.Clientset = clientset
@@ -323,7 +326,7 @@ func TestAddNodeFailure(t *testing.T) {
 		CephVersion: cephver.Nautilus,
 	}
 	c := New(clusterInfo, &clusterd.Context{Clientset: clientset, ConfigDir: "/var/lib/rook", Executor: &exectest.MockExecutor{}}, "ns-add-remove", "myversion", cephv1.CephVersionSpec{},
-		storageSpec, "/foo", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, metav1.OwnerReference{})
+		storageSpec, "/foo", rookalpha.Placement{}, rookalpha.Annotations{}, false, v1.ResourceRequirements{}, "my-priority-class", metav1.OwnerReference{})
 
 	// kick off the start of the orchestration in a goroutine
 	var startErr error

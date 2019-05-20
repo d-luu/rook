@@ -42,6 +42,10 @@ spec:
         - name: AGENT_TOLERATION_KEY
           value: {{ .Values.agent.tolerationKey }}
 {{- end }}
+{{- if .Values.agent.priorityClassName }}
+        - name: AGENT_PRIORITY_CLASS_NAME
+          value: {{ .Values.agent.priorityClassName }}
+{{- end }}
 {{- if .Values.agent.mountSecurityMode }}
         - name: AGENT_MOUNT_SECURITY_MODE
           value: {{ .Values.agent.mountSecurityMode }}
@@ -67,6 +71,10 @@ spec:
 {{- if .Values.discover.tolerationKey }}
         - name: DISCOVER_TOLERATION_KEY
           value: {{ .Values.discover.tolerationKey }}
+{{- end }}
+{{- if .Values.discover.priorityClassName }}
+        - name: DISCOVER_PRIORITY_CLASS_NAME
+          value: {{ .Values.discover.priorityClassName }}
 {{- end }}
 {{- end }}
 {{- if .Values.hostpathRequiresPrivileged }}

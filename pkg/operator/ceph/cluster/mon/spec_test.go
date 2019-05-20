@@ -17,6 +17,7 @@ limitations under the License.
 package mon
 
 import (
+	"github.com/rook/rook/pkg/apis/rook.io/v1alpha2"
 	"testing"
 
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
@@ -58,6 +59,8 @@ func testPodSpec(t *testing.T, monID string) {
 		},
 	}
 	monConfig := testGenMonConfig(monID)
+	c.spec.PriorityClassNames = map[v1alpha2.KeyType]string{}
+	c.spec.PriorityClassNames[cephv1.KeyMon] = "my-priority-class"
 
 	d := c.makeDeployment(monConfig, "node0")
 	assert.NotNil(t, d)
@@ -68,5 +71,6 @@ func testPodSpec(t *testing.T, monID string) {
 
 	podTemplate := cephtest.NewPodTemplateSpecTester(t, &d.Spec.Template)
 	podTemplate.RunFullSuite(config.MonType, monID, appName, "ns", "ceph/ceph:myceph",
-		"200", "100", "1337", "500" /* resources */)
+		"200", "100", "1337", "500", /* resources */
+		"my-priority-class")
 }

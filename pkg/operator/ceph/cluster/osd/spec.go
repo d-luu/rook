@@ -80,7 +80,7 @@ func (c *Cluster) makeJob(nodeName string, devices []rookalpha.Device,
 }
 
 func (c *Cluster) makeDeployment(nodeName string, selection rookalpha.Selection, resources v1.ResourceRequirements,
-	storeConfig config.StoreConfig, metadataDevice, location string, osd OSDInfo) (*apps.Deployment, error) {
+	priorityClassName string, storeConfig config.StoreConfig, metadataDevice, location string, osd OSDInfo) (*apps.Deployment, error) {
 
 	replicaCount := int32(1)
 	volumeMounts := opspec.CephVolumeMounts()
@@ -293,6 +293,7 @@ func (c *Cluster) makeDeployment(nodeName string, selection rookalpha.Selection,
 					HostPID:            true,
 					HostIPC:            hostIPC,
 					DNSPolicy:          DNSPolicy,
+					PriorityClassName:  priorityClassName,
 					InitContainers: []v1.Container{
 						{
 							Args:            []string{"ceph", "osd", "init"},
@@ -387,9 +388,10 @@ func (c *Cluster) provisionPodTemplateSpec(devices []rookalpha.Device, selection
 			*copyBinariesContainer,
 			c.provisionOSDContainer(devices, selection, resources, storeConfig, metadataDevice, nodeName, location, copyBinariesContainer.VolumeMounts[0]),
 		},
-		RestartPolicy: restart,
-		Volumes:       volumes,
-		HostNetwork:   c.HostNetwork,
+		RestartPolicy:     restart,
+		Volumes:           volumes,
+		HostNetwork:       c.HostNetwork,
+		PriorityClassName: c.priorityClassName,
 	}
 	if c.HostNetwork {
 		podSpec.DNSPolicy = v1.DNSClusterFirstWithHostNet

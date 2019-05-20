@@ -64,6 +64,7 @@ func TestStartMGR(t *testing.T) {
 		false,
 		cephv1.DashboardSpec{Enabled: true},
 		v1.ResourceRequirements{},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)
@@ -102,8 +103,9 @@ func validateStart(t *testing.T, c *Cluster) {
 		}
 		logger.Infof("Looking for cephmgr replica %d", i)
 		daemonName := mgrNames[i]
-		_, err := c.context.Clientset.AppsV1().Deployments(c.Namespace).Get(fmt.Sprintf("rook-ceph-mgr-%s", daemonName), metav1.GetOptions{})
+		deployment, err := c.context.Clientset.AppsV1().Deployments(c.Namespace).Get(fmt.Sprintf("rook-ceph-mgr-%s", daemonName), metav1.GetOptions{})
 		assert.Nil(t, err)
+		assert.Equal(t, "my-priority-class", deployment.Spec.Template.Spec.PriorityClassName)
 	}
 
 	_, err := c.context.Clientset.CoreV1().Services(c.Namespace).Get("rook-ceph-mgr", metav1.GetOptions{})

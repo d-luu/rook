@@ -56,21 +56,22 @@ const (
 
 // Cluster keeps track of the OSDs
 type Cluster struct {
-	clusterInfo     *cephconfig.ClusterInfo
-	context         *clusterd.Context
-	Namespace       string
-	placement       rookalpha.Placement
-	annotations     rookalpha.Annotations
-	Keyring         string
-	rookVersion     string
-	cephVersion     cephv1.CephVersionSpec
-	DesiredStorage  rookalpha.StorageScopeSpec // user-defined storage scope spec
-	ValidStorage    rookalpha.StorageScopeSpec // valid subset of `Storage`, computed at runtime
-	dataDirHostPath string
-	HostNetwork     bool
-	resources       v1.ResourceRequirements
-	ownerRef        metav1.OwnerReference
-	kv              *k8sutil.ConfigMapKVStore
+	clusterInfo       *cephconfig.ClusterInfo
+	context           *clusterd.Context
+	Namespace         string
+	placement         rookalpha.Placement
+	annotations       rookalpha.Annotations
+	Keyring           string
+	rookVersion       string
+	cephVersion       cephv1.CephVersionSpec
+	DesiredStorage    rookalpha.StorageScopeSpec // user-defined storage scope spec
+	ValidStorage      rookalpha.StorageScopeSpec // valid subset of `Storage`, computed at runtime
+	dataDirHostPath   string
+	HostNetwork       bool
+	resources         v1.ResourceRequirements
+	priorityClassName string
+	ownerRef          metav1.OwnerReference
+	kv                *k8sutil.ConfigMapKVStore
 }
 
 // New creates an instance of the OSD manager
@@ -86,22 +87,24 @@ func New(
 	annotations rookalpha.Annotations,
 	hostNetwork bool,
 	resources v1.ResourceRequirements,
+	priorityClassName string,
 	ownerRef metav1.OwnerReference,
 ) *Cluster {
 	return &Cluster{
-		clusterInfo:     clusterInfo,
-		context:         context,
-		Namespace:       namespace,
-		placement:       placement,
-		annotations:     annotations,
-		rookVersion:     rookVersion,
-		cephVersion:     cephVersion,
-		DesiredStorage:  storageSpec,
-		dataDirHostPath: dataDirHostPath,
-		HostNetwork:     hostNetwork,
-		resources:       resources,
-		ownerRef:        ownerRef,
-		kv:              k8sutil.NewConfigMapKVStore(namespace, context.Clientset, ownerRef),
+		clusterInfo:       clusterInfo,
+		context:           context,
+		Namespace:         namespace,
+		placement:         placement,
+		annotations:       annotations,
+		rookVersion:       rookVersion,
+		cephVersion:       cephVersion,
+		DesiredStorage:    storageSpec,
+		dataDirHostPath:   dataDirHostPath,
+		HostNetwork:       hostNetwork,
+		resources:         resources,
+		priorityClassName: priorityClassName,
+		ownerRef:          ownerRef,
+		kv:                k8sutil.NewConfigMapKVStore(namespace, context.Clientset, ownerRef),
 	}
 }
 
@@ -275,7 +278,7 @@ func (c *Cluster) startOSDDaemonsOnNode(nodeName string, config *provisionConfig
 	// start osds
 	for _, osd := range osds {
 		logger.Debugf("start osd %v", osd)
-		dp, err := c.makeDeployment(n.Name, n.Selection, n.Resources, storeConfig, metadataDevice, n.Location, osd)
+		dp, err := c.makeDeployment(n.Name, n.Selection, n.Resources, c.priorityClassName, storeConfig, metadataDevice, n.Location, osd)
 		if err != nil {
 			errMsg := fmt.Sprintf("failed to create deployment for node %s: %v", n.Name, err)
 			config.addError(errMsg)

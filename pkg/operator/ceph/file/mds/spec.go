@@ -48,9 +48,10 @@ func (c *Cluster) makeDeployment(mdsConfig *mdsConfig) *apps.Deployment {
 			Containers: []v1.Container{
 				c.makeMdsDaemonContainer(mdsConfig),
 			},
-			RestartPolicy: v1.RestartPolicyAlways,
-			Volumes:       opspec.DaemonVolumes(mdsConfig.DataPathMap, mdsConfig.ResourceName),
-			HostNetwork:   c.HostNetwork,
+			RestartPolicy:     v1.RestartPolicyAlways,
+			Volumes:           opspec.DaemonVolumes(mdsConfig.DataPathMap, mdsConfig.ResourceName),
+			HostNetwork:       c.HostNetwork,
+			PriorityClassName: c.fs.Spec.MetadataServer.PriorityClassName,
 		},
 	}
 	if c.HostNetwork {

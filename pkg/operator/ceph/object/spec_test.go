@@ -60,7 +60,8 @@ func TestPodSpecs(t *testing.T) {
 
 	podTemplate := cephtest.NewPodTemplateSpecTester(t, &s)
 	podTemplate.RunFullSuite(cephconfig.RgwType, "default", "rook-ceph-rgw", "mycluster", "ceph/ceph:myversion",
-		"200", "100", "1337", "500" /* resources */)
+		"200", "100", "1337", "500", /* resources */
+		"my-priority-class")
 }
 
 func TestSSLPodSpec(t *testing.T) {
@@ -95,7 +96,8 @@ func TestSSLPodSpec(t *testing.T) {
 
 	podTemplate := cephtest.NewPodTemplateSpecTester(t, &s)
 	podTemplate.RunFullSuite(cephconfig.RgwType, "default", "rook-ceph-rgw", "mycluster", "ceph/ceph:myversion",
-		"200", "100", "1337", "500" /* resources */)
+		"200", "100", "1337", "500", /* resources */
+		"my-priority-class")
 
 	assert.True(t, s.Spec.HostNetwork)
 	assert.Equal(t, v1.DNSClusterFirstWithHostNet, s.Spec.DNSPolicy)

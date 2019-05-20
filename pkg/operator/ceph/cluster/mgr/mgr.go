@@ -47,21 +47,22 @@ const (
 
 // Cluster represents the Rook and environment configuration settings needed to set up Ceph mgrs.
 type Cluster struct {
-	clusterInfo     *cephconfig.ClusterInfo
-	Namespace       string
-	Replicas        int
-	placement       rookalpha.Placement
-	annotations     rookalpha.Annotations
-	context         *clusterd.Context
-	dataDir         string
-	HostNetwork     bool
-	resources       v1.ResourceRequirements
-	ownerRef        metav1.OwnerReference
-	dashboard       cephv1.DashboardSpec
-	cephVersion     cephv1.CephVersionSpec
-	rookVersion     string
-	exitCode        func(err error) (int, bool)
-	dataDirHostPath string
+	clusterInfo       *cephconfig.ClusterInfo
+	Namespace         string
+	Replicas          int
+	placement         rookalpha.Placement
+	annotations       rookalpha.Annotations
+	context           *clusterd.Context
+	dataDir           string
+	HostNetwork       bool
+	resources         v1.ResourceRequirements
+	priorityClassName string
+	ownerRef          metav1.OwnerReference
+	dashboard         cephv1.DashboardSpec
+	cephVersion       cephv1.CephVersionSpec
+	rookVersion       string
+	exitCode          func(err error) (int, bool)
+	dataDirHostPath   string
 }
 
 // New creates an instance of the mgr
@@ -75,24 +76,27 @@ func New(
 	hostNetwork bool,
 	dashboard cephv1.DashboardSpec,
 	resources v1.ResourceRequirements,
+	priorityClassName string,
 	ownerRef metav1.OwnerReference,
 	dataDirHostPath string,
 ) *Cluster {
 	return &Cluster{
-		clusterInfo:     clusterInfo,
-		context:         context,
-		Namespace:       namespace,
-		placement:       placement,
-		rookVersion:     rookVersion,
-		cephVersion:     cephVersion,
-		Replicas:        1,
-		dataDir:         k8sutil.DataDir,
-		dashboard:       dashboard,
-		HostNetwork:     hostNetwork,
-		resources:       resources,
-		ownerRef:        ownerRef,
-		exitCode:        getExitCode,
-		dataDirHostPath: dataDirHostPath,
+		clusterInfo:       clusterInfo,
+		context:           context,
+		Namespace:         namespace,
+		placement:         placement,
+		annotations:       annotations,
+		rookVersion:       rookVersion,
+		cephVersion:       cephVersion,
+		Replicas:          1,
+		dataDir:           k8sutil.DataDir,
+		dashboard:         dashboard,
+		HostNetwork:       hostNetwork,
+		resources:         resources,
+		priorityClassName: priorityClassName,
+		ownerRef:          ownerRef,
+		exitCode:          getExitCode,
+		dataDirHostPath:   dataDirHostPath,
 	}
 }
 

@@ -40,18 +40,19 @@ const (
 
 // Mirroring represents the Rook and environment configuration settings needed to set up rbd mirroring.
 type Mirroring struct {
-	ClusterInfo     *cephconfig.ClusterInfo
-	Namespace       string
-	placement       rookalpha.Placement
-	annotations     rookalpha.Annotations
-	context         *clusterd.Context
-	resources       v1.ResourceRequirements
-	ownerRef        metav1.OwnerReference
-	spec            cephv1.RBDMirroringSpec
-	cephVersion     cephv1.CephVersionSpec
-	rookVersion     string
-	hostNetwork     bool
-	dataDirHostPath string
+	ClusterInfo       *cephconfig.ClusterInfo
+	Namespace         string
+	placement         rookalpha.Placement
+	annotations       rookalpha.Annotations
+	context           *clusterd.Context
+	resources         v1.ResourceRequirements
+	priorityClassName string
+	ownerRef          metav1.OwnerReference
+	spec              cephv1.RBDMirroringSpec
+	cephVersion       cephv1.CephVersionSpec
+	rookVersion       string
+	hostNetwork       bool
+	dataDirHostPath   string
 }
 
 // New creates an instance of the rbd mirroring
@@ -65,22 +66,24 @@ func New(
 	hostNetwork bool,
 	spec cephv1.RBDMirroringSpec,
 	resources v1.ResourceRequirements,
+	priorityClassName string,
 	ownerRef metav1.OwnerReference,
 	dataDirHostPath string,
 ) *Mirroring {
 	return &Mirroring{
-		ClusterInfo:     cluster,
-		context:         context,
-		Namespace:       namespace,
-		placement:       placement,
-		annotations:     annotations,
-		rookVersion:     rookVersion,
-		cephVersion:     cephVersion,
-		spec:            spec,
-		hostNetwork:     hostNetwork,
-		resources:       resources,
-		ownerRef:        ownerRef,
-		dataDirHostPath: dataDirHostPath,
+		ClusterInfo:       cluster,
+		context:           context,
+		Namespace:         namespace,
+		placement:         placement,
+		annotations:       annotations,
+		rookVersion:       rookVersion,
+		cephVersion:       cephVersion,
+		spec:              spec,
+		hostNetwork:       hostNetwork,
+		resources:         resources,
+		priorityClassName: priorityClassName,
+		ownerRef:          ownerRef,
+		dataDirHostPath:   dataDirHostPath,
 	}
 }
 

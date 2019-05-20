@@ -55,6 +55,7 @@ func TestRBDMirror(t *testing.T) {
 		false,
 		cephv1.RBDMirroringSpec{Workers: 2},
 		v1.ResourceRequirements{},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)
@@ -71,5 +72,6 @@ func TestRBDMirror(t *testing.T) {
 	for _, de := range d.Items {
 		daemonName := de.Name[len(de.Name)-1:]
 		assert.True(t, keysCreated[fullDaemonName(daemonName)])
+		assert.Equal(t, "my-priority-class", de.Spec.Template.Spec.PriorityClassName)
 	}
 }

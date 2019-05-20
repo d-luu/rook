@@ -38,13 +38,14 @@ import (
 )
 
 const (
-	discoverDaemonsetName             = "rook-discover"
-	discoverDaemonsetTolerationEnv    = "DISCOVER_TOLERATION"
-	discoverDaemonsetTolerationKeyEnv = "DISCOVER_TOLERATION_KEY"
-	deviceInUseCMName                 = "local-device-in-use-cluster-%s-node-%s"
-	deviceInUseAppName                = "rook-claimed-devices"
-	deviceInUseClusterAttr            = "rook.io/cluster"
-	discoverIntervalEnv               = "ROOK_DISCOVER_DEVICES_INTERVAL"
+	discoverDaemonsetName                 = "rook-discover"
+	discoverDaemonsetTolerationEnv        = "DISCOVER_TOLERATION"
+	discoverDaemonsetTolerationKeyEnv     = "DISCOVER_TOLERATION_KEY"
+	discoverDaemonsetPriorityClassNameEnv = "DISCOVER_PRIORITY_CLASS_NAME"
+	deviceInUseCMName                     = "local-device-in-use-cluster-%s-node-%s"
+	deviceInUseAppName                    = "rook-claimed-devices"
+	deviceInUseClusterAttr                = "rook.io/cluster"
+	discoverIntervalEnv                   = "ROOK_DISCOVER_DEVICES_INTERVAL"
 )
 
 var logger = capnslog.NewPackageLogger("github.com/rook/rook", "op-discover")
@@ -152,7 +153,8 @@ func (d *Discover) createDiscoverDaemonSet(namespace, discoverImage, securityAcc
 							},
 						},
 					},
-					HostNetwork: false,
+					HostNetwork:       false,
+					PriorityClassName: os.Getenv(discoverDaemonsetPriorityClassNameEnv),
 				},
 			},
 		},

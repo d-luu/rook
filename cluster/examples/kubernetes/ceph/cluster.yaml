@@ -88,6 +88,11 @@ spec:
 # The above example requests/limits can also be added to the mon and osd components
 #    mon:
 #    osd:
+  priorityClassNames:
+#    all:
+#    mon:
+#    osd:
+#    mgr:
   storage: # cluster level storage configuration and selection
     useAllNodes: true
     useAllDevices: true

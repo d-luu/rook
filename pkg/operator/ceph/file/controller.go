@@ -238,6 +238,10 @@ func filesystemChanged(oldFS, newFS cephv1.FilesystemSpec) bool {
 		logger.Infof("mds active standby changed from %t to %t", oldFS.MetadataServer.ActiveStandby, newFS.MetadataServer.ActiveStandby)
 		return true
 	}
+	if oldFS.MetadataServer.PriorityClassName != newFS.MetadataServer.PriorityClassName {
+		logger.Infof("mds priority class name changed from %s to %s", oldFS.MetadataServer.PriorityClassName, newFS.MetadataServer.PriorityClassName)
+		return true
+	}
 	return false
 }
 
@@ -324,10 +328,11 @@ func convertRookLegacyFilesystem(legacyFilesystem *cephbeta.Filesystem) *cephv1.
 			MetadataPool: pool.ConvertRookLegacyPoolSpec(legacySpec.MetadataPool),
 			DataPools:    dataPools,
 			MetadataServer: cephv1.MetadataServerSpec{
-				ActiveCount:   legacySpec.MetadataServer.ActiveCount,
-				ActiveStandby: legacySpec.MetadataServer.ActiveStandby,
-				Placement:     legacySpec.MetadataServer.Placement,
-				Resources:     legacySpec.MetadataServer.Resources,
+				ActiveCount:       legacySpec.MetadataServer.ActiveCount,
+				ActiveStandby:     legacySpec.MetadataServer.ActiveStandby,
+				Placement:         legacySpec.MetadataServer.Placement,
+				Resources:         legacySpec.MetadataServer.Resources,
+				PriorityClassName: legacySpec.MetadataServer.PriorityClassName,
 			},
 		},
 	}

@@ -130,7 +130,8 @@ func (c *clusterConfig) makeRGWPodSpec() v1.PodTemplateSpec {
 			opspec.DaemonVolumes(c.DataPathMap, c.instanceName()),
 			c.mimeTypesVolume(),
 		),
-		HostNetwork: c.hostNetwork,
+		HostNetwork:       c.hostNetwork,
+		PriorityClassName: c.store.Spec.Gateway.PriorityClassName,
 	}
 	if c.hostNetwork {
 		podSpec.DNSPolicy = v1.DNSClusterFirstWithHostNet

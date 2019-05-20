@@ -36,9 +36,10 @@ func (m *Mirroring) makeDeployment(daemonConfig *daemonConfig) *apps.Deployment 
 			Containers: []v1.Container{
 				m.makeMirroringDaemonContainer(daemonConfig),
 			},
-			RestartPolicy: v1.RestartPolicyAlways,
-			Volumes:       opspec.DaemonVolumes(daemonConfig.DataPathMap, daemonConfig.ResourceName),
-			HostNetwork:   m.hostNetwork,
+			RestartPolicy:     v1.RestartPolicyAlways,
+			Volumes:           opspec.DaemonVolumes(daemonConfig.DataPathMap, daemonConfig.ResourceName),
+			HostNetwork:       m.hostNetwork,
+			PriorityClassName: m.priorityClassName,
 		},
 	}
 	if m.hostNetwork {

@@ -53,6 +53,7 @@ func TestPodSpec(t *testing.T) {
 				v1.ResourceMemory: *resource.NewQuantity(300.0, resource.BinarySI),
 			},
 		},
+		"my-priority-class",
 		metav1.OwnerReference{},
 		"/var/lib/rook/",
 	)
@@ -71,5 +72,6 @@ func TestPodSpec(t *testing.T) {
 
 	podTemplate := cephtest.NewPodTemplateSpecTester(t, &d.Spec.Template)
 	podTemplate.RunFullSuite(config.RbdMirrorType, "a", appName, "ns", "ceph/ceph:myceph",
-		"200", "100", "600", "300" /* resources */)
+		"200", "100", "600", "300", /* resources */
+		"my-priority-class")
 }
