@@ -129,7 +129,11 @@ func (c *Cluster) makeDeployment(nodeName string, selection rookalpha.Selection,
 		k8sutil.PodIPEnvVar(k8sutil.PublicIPEnvVar),
 		tiniEnvVar,
 	}
-	envVars = append(envVars, k8sutil.ClusterDaemonEnvVars(c.cephVersion.Image)...)
+	if osd.IsFileStore && c.clusterInfo.CephVersion.IsAtLeastNautilus() {
+		envVars = append(envVars, k8sutil.ClusterDaemonEnvVarsWithoutPodMemory(c.cephVersion.Image)...)
+	} else {
+		envVars = append(envVars, k8sutil.ClusterDaemonEnvVars(c.cephVersion.Image)...)
+	}
 	envVars = append(envVars, []v1.EnvVar{
 		{Name: "ROOK_OSD_UUID", Value: osd.UUID},
 		{Name: "ROOK_OSD_ID", Value: osdID},
